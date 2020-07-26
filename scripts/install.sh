@@ -18,7 +18,7 @@ configMyMetadata() {
     read -p 'Please enter metadata database name: ' database
     read -p 'Please enter metadata collection name: ' collection
     read -p 'Please enter metadata server username: ' username
-    read -p 'Please enter metadata server password: ' password
+    read -sp 'Please enter metadata server password: ' password
     read -p 'Please enter unix socket(default: /run/mymetadata-go.sock): ' unix
     [ -z $unix ] && unix=/run/mymetadata-go.sock
     read -p 'Please enter host(default: 127.0.0.1): ' host
