@@ -1,0 +1,10 @@
+dbserver   = $dbserver
+dbport     = $dbport
+database   = $database
+collection = $collection
+username   = $username
+password   = $password
+unix       = $unix
+host       = $host
+port       = $port
+log        = $log

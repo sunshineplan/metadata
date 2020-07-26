@@ -1,0 +1,9 @@
+[Unit]
+Description=uWSGI instance to serve My Metadata
+After=network.target
+
+[Service]
+ExecStart=/var/www/mymetadata-go/mymetadata-go -config /var/www/mymetadata-go/config.ini
+
+[Install]
+WantedBy=multi-user.target
