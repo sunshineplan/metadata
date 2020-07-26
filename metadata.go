@@ -6,10 +6,10 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/sunshineplan/utils/ste"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -29,10 +29,10 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	allowlist := metadata["allowlist"]
-	var remote string
+	remote := getClientIP(r)
 	if allowlist != nil {
 		var allow bool
-		switch remote = getClientIP(r); remote {
+		switch remote {
 		case "127.0.0.1", "::1":
 			allow = true
 		case "":
@@ -40,7 +40,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		default:
 			remoteIP := net.ParseIP(remote)
-			for _, i := range allowlist.([]interface{}) {
+			for _, i := range allowlist.(primitive.A) {
 				ip, err := net.LookupIP(i.(string))
 				if err == nil {
 					for _, a := range ip {
@@ -77,9 +77,9 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 		w.Write([]byte(ste.Encrypt(base64.StdEncoding.EncodeToString([]byte(key["value"].(string))), string(value))))
-		log.Printf(`%s - [%s] "%s" - "%s"`, time.Now().Format("2006/01/02 - 15:04:05"), remote, r.URL, r.UserAgent())
+		log.Printf(`- [%s] "%s" - "%s"`, remote, r.URL, r.UserAgent())
 		return
 	}
 	w.Write(value)
-	log.Printf(`%s - [%s] "%s" - "%s"`, time.Now().Format("2006/01/02 - 15:04:05"), remote, r.URL, r.UserAgent())
+	log.Printf(`- [%s] "%s" - "%s"`, remote, r.URL, r.UserAgent())
 }
