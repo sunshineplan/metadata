@@ -1,6 +1,4 @@
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/avast/retry-go v2.6.0+incompatible h1:FelcMrm7Bxacr1/RM8+/eqkDkmVN7tjlsy51dOzB3LI=
-github.com/avast/retry-go v2.6.0+incompatible/go.mod h1:XtSnn+n/sHqQIpZ10K1qAevBhOOCWBLXXy3hyiqqBrY=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-mail/mail v2.3.1+incompatible h1:UzNOn0k5lpfVtO31cK3hn6I4VEVGhe3lX8AJBAxXExM=
@@ -69,10 +67,6 @@ github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
-github.com/sunshineplan/metadata v0.0.0-20200724054017-258e10d69a66 h1:Im33xfdAOWwb+Kw9xg8smdsXWROQTpb7X7LfaqFawKY=
-github.com/sunshineplan/metadata v0.0.0-20200724054017-258e10d69a66/go.mod h1:0MYYxq/eL+DQecrRyVk6YGjwf2DUEbQ96nREGYWojyE=
-github.com/sunshineplan/utils v0.0.0-20200716090624-b3eb17c23fa0 h1:KUvyvfXYzN/MIURHfBf5wv/OxPaGaKwr68hBbyAke0E=
-github.com/sunshineplan/utils v0.0.0-20200716090624-b3eb17c23fa0/go.mod h1:fJ8/Fjbd50RwQ8/wxBmBgkuDHfcXrCJu6c/iRsgkYok=
 github.com/sunshineplan/utils v0.0.0-20200725095742-d2440e8f003a h1:7HqymU1UYqi1XM+kK21ndk9K0ltfTWGx5sZcwAYZnbk=
 github.com/sunshineplan/utils v0.0.0-20200725095742-d2440e8f003a/go.mod h1:fJ8/Fjbd50RwQ8/wxBmBgkuDHfcXrCJu6c/iRsgkYok=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
