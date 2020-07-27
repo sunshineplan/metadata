@@ -70,7 +70,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		w.WriteHeader(500)
 		return
 	}
-	if metadata["encrypt"] == 1 {
+	if metadata["encrypt"] == true {
 		key, err := query("key")
 		if err != nil || key["value"] == nil {
 			w.WriteHeader(500)
