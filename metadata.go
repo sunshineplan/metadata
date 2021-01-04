@@ -8,29 +8,32 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/sunshineplan/utils/ste"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/sunshineplan/cipher"
 )
 
 func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	verify, err := query("metadata_verify")
-	if err != nil {
+	var verify struct{ Header, Content string }
+	if err := query("metadata_verify", &verify); err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	header := r.Header.Get(verify["header"].(string))
-	if header == "" || header != verify["content"] {
+	header := r.Header.Get(verify.Header)
+	if header == "" || header != verify.Content {
 		w.WriteHeader(403)
 		return
 	}
-	metadata, err := query(ps.ByName("metadata"))
-	if err != nil {
+
+	var metadata struct {
+		Value     interface{}
+		Allowlist []string
+		Encrypt   bool
+	}
+	if err := query(ps.ByName("metadata"), &metadata); err != nil {
 		w.WriteHeader(404)
 		return
 	}
-	allowlist := metadata["allowlist"]
 	remote := getClientIP(r)
-	if allowlist != nil {
+	if metadata.Allowlist != nil {
 		var allow bool
 		switch remote {
 		case "127.0.0.1", "::1":
@@ -40,8 +43,8 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		default:
 			remoteIP := net.ParseIP(remote)
-			for _, i := range allowlist.(primitive.A) {
-				ip, err := net.LookupIP(i.(string))
+			for _, i := range metadata.Allowlist {
+				ip, err := net.LookupIP(i)
 				if err == nil {
 					for _, a := range ip {
 						if remoteIP.Equal(a) {
@@ -49,7 +52,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 						}
 					}
 				} else {
-					_, ipnet, err := net.ParseCIDR(i.(string))
+					_, ipnet, err := net.ParseCIDR(i)
 					if err != nil {
 						w.WriteHeader(500)
 						return
@@ -59,26 +62,24 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 					}
 				}
 			}
-			if !allow {
-				w.WriteHeader(403)
-				return
-			}
+		}
+		if !allow {
+			w.WriteHeader(403)
+			return
 		}
 	}
-	value, err := json.Marshal(metadata["value"])
+	value, err := json.Marshal(metadata.Value)
 	if err != nil {
 		w.WriteHeader(500)
 		return
 	}
-	if metadata["encrypt"] == true {
-		key, err := query("key")
-		if err != nil || key["value"] == nil {
+	if metadata.Encrypt {
+		var key struct{ Value string }
+		if err := query("key", &key); err != nil || key.Value == "" {
 			w.WriteHeader(500)
 			return
 		}
-		w.Write([]byte(ste.Encrypt(base64.StdEncoding.EncodeToString([]byte(key["value"].(string))), string(value))))
-		log.Printf(`- [%s] "%s" - "%s"`, remote, r.URL, r.UserAgent())
-		return
+		value = []byte(cipher.Encrypt(base64.StdEncoding.EncodeToString([]byte(key.Value)), string(value)))
 	}
 	w.Write(value)
 	log.Printf(`- [%s] "%s" - "%s"`, remote, r.URL, r.UserAgent())

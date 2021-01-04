@@ -1,8 +1,8 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -29,27 +29,39 @@ func getClientIP(r *http.Request) string {
 }
 
 func backup() {
-	file := dump()
-	defer os.Remove(file)
-	var mailSetting mail.Setting
-	c, err := query("metadata_backup")
+	log.Print("Start!")
+	tmpfile, err := ioutil.TempFile("", "tmp")
 	if err != nil {
 		log.Fatal(err)
 	}
-	jsonbody, err := json.Marshal(c["value"])
-	if err != nil {
+	tmpfile.Close()
+	if err := mongo.Backup(tmpfile.Name()); err != nil {
 		log.Fatal(err)
 	}
-	if err := json.Unmarshal(jsonbody, &mailSetting); err != nil {
+	defer os.Remove(tmpfile.Name())
+
+	var backup struct {
+		Value struct {
+			From, SMTPServer, Password string
+			SMTPServerPort             int
+			To                         []string
+		}
+	}
+	if err := query("metadata_backup", &backup); err != nil {
 		log.Fatal(err)
 	}
-	if err := mail.SendMail(
-		&mailSetting,
-		fmt.Sprintf("My Metadata Backup-%s", time.Now().Format("20060102")),
-		"",
-		&mail.Attachment{FilePath: file, Filename: "database"},
-	); err != nil {
+
+	if err := (&mail.Dialer{
+		Host:     backup.Value.SMTPServer,
+		Port:     backup.Value.SMTPServerPort,
+		Account:  backup.Value.From,
+		Password: backup.Value.Password,
+	}).Send(&mail.Message{
+		To:          backup.Value.To,
+		Subject:     fmt.Sprintf("Metadata Backup-%s", time.Now().Format("20060102")),
+		Attachments: []*mail.Attachment{{Path: tmpfile.Name(), Filename: "database"}},
+	}); err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Backup My Metadata done.")
+	log.Print("Backup Done!")
 }

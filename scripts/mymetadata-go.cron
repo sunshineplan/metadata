@@ -1,3 +1,0 @@
-#! /bin/bash
-
-/var/www/mymetadata-go/mymetadata-go backup
