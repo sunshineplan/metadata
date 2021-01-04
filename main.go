@@ -7,10 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sunshineplan/utils/database/mongodb"
 	"github.com/sunshineplan/utils/service"
 	"github.com/vharitonsky/iniflags"
 )
 
+var mongo mongodb.Config
 var logPath *string
 
 var svc = service.Service{

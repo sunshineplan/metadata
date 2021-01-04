@@ -1,15 +1,30 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"log"
 	"net"
 	"net/http"
+	"time"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/sunshineplan/cipher"
 )
+
+func query(metadata string, data interface{}) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := mongo.Open()
+	if err != nil {
+		return err
+	}
+	defer client.Disconnect(ctx)
+	collection := client.Database(mongo.Database).Collection(mongo.Collection)
+
+	return collection.FindOne(ctx, map[string]interface{}{"_id": metadata}).Decode(data)
+}
 
 func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var verify struct{ Header, Content string }
