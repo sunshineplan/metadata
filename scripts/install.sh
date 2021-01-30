@@ -1,20 +1,25 @@
 #! /bin/bash
 
 installSoftware() {
-    apt -qq -y install nginx
-    apt -qq -y -t $(lsb_release -sc)-backports install golang-go
+    apt -qq -y install nginx mongodb-org-tools
 }
 
 installMyMetadata() {
-    curl -Lo- https://github.com/sunshineplan/metadata/archive/v1.0.tar.gz | tar zxC /var/www
-    mv /var/www/metadata* /var/www/metadata
+    mkdir -p /var/www/metadata
+    curl -Lo- https://github.com/sunshineplan/metadata/releases/download/v1.0/release.tar.gz | tar zxC /var/www/metadata
     cd /var/www/metadata
-    go build -ldflags "-s -w"
-    ./metadata install
+    chmod +x metadata
 }
 
 configMyMetadata() {
     read -p 'Please enter metadata database server address: ' dbserver
+    while true
+    do
+        read -p 'Please enter if srv server(default: false): ' srv
+        [ -z $srv ] && srv=false && break
+        [ $srv = true -o $srv = false ] && break
+        echo If SRV Server must be true or false!
+    done
     read -p 'Please enter metadata server port: ' dbport
     read -p 'Please enter metadata database name: ' database
     read -p 'Please enter metadata collection name: ' collection
@@ -28,8 +33,11 @@ configMyMetadata() {
     [ -z $port ] && port=12345
     read -p 'Please enter log path(default: /var/log/app/metadata.log): ' log
     [ -z $log ] && log=/var/log/app/metadata.log
+    read -p 'Please enter update URL: ' update
+    read -p 'Please enter exclude files: ' exclude
     mkdir -p $(dirname $log)
     sed "s/\$dbserver/$dbserver/" /var/www/metadata/config.ini.default > /var/www/metadata/config.ini
+    sed -i "s/\$srv/$srv/" /var/www/metadata/config.ini
     sed -i "s/\$dbport/$dbport/" /var/www/metadata/config.ini
     sed -i "s/\$database/$database/" /var/www/metadata/config.ini
     sed -i "s/\$collection/$collection/" /var/www/metadata/config.ini
@@ -39,6 +47,9 @@ configMyMetadata() {
     sed -i "s,\$log,$log," /var/www/metadata/config.ini
     sed -i "s/\$host/$host/" /var/www/metadata/config.ini
     sed -i "s/\$port/$port/" /var/www/metadata/config.ini
+    sed -i "s,\$update,$update," /var/www/metadata/config.ini
+    sed -i "s|\$exclude|$exclude|" /var/www/metadata/config.ini
+    ./metadata install
     service metadata start
 }
 

@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sunshineplan/service"
 	"github.com/sunshineplan/utils/database/mongodb"
-	"github.com/sunshineplan/utils/service"
 	"github.com/vharitonsky/iniflags"
 )
 
@@ -29,6 +29,7 @@ func main() {
 	}
 
 	flag.StringVar(&mongo.Server, "dbserver", "localhost", "Metadata Database Server Address")
+	flag.BoolVar(&mongo.SRV, "srv", false, "SRV Server")
 	flag.IntVar(&mongo.Port, "dbport", 27017, "Metadata Database Port")
 	flag.StringVar(&mongo.Database, "database", "", "Metadata Database Name")
 	flag.StringVar(&mongo.Collection, "collection", "", "Metadata Database Collection Name")
@@ -37,10 +38,14 @@ func main() {
 	flag.StringVar(&server.Unix, "unix", "", "UNIX-domain Socket")
 	flag.StringVar(&server.Host, "host", "127.0.0.1", "Server Host")
 	flag.StringVar(&server.Port, "port", "12345", "Server Port")
+	flag.StringVar(&svc.Options.UpdateURL, "update", "", "Update URL")
+	exclude := flag.String("exclude", "", "Exclude Files")
 	logPath = flag.String("log", "", "Log Path")
 	iniflags.SetConfigFile(filepath.Join(filepath.Dir(self), "config.ini"))
 	iniflags.SetAllowMissingConfigFile(true)
 	iniflags.Parse()
+
+	svc.Options.ExcludeFiles = strings.Split(*exclude, ",")
 
 	if service.IsWindowsService() {
 		svc.Run(false)
@@ -62,6 +67,8 @@ func main() {
 			err = svc.Start()
 		case "stop":
 			err = svc.Stop()
+		case "update":
+			err = svc.Update()
 		case "backup":
 			backup()
 		default:
@@ -71,6 +78,6 @@ func main() {
 		log.Fatalln("Unknown arguments:", strings.Join(flag.Args(), " "))
 	}
 	if err != nil {
-		log.Fatalf("failed to %s Metadata: %v", flag.Arg(0), err)
+		log.Fatalf("failed to %s: %v", flag.Arg(0), err)
 	}
 }
