@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -32,9 +33,21 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		w.WriteHeader(500)
 		return
 	}
+	var key struct{ Key string }
+	if err := query("key", &key); err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
 	header := r.Header.Get(verify.Header)
 	if header == "" || header != verify.Content {
 		w.WriteHeader(403)
+		return
+	}
+
+	param := ps.ByName("metadata")
+	if param == "key" {
+		w.Write([]byte(fmt.Sprintf("%q", key.Key)))
 		return
 	}
 
@@ -43,7 +56,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		Allowlist []string
 		Encrypt   bool
 	}
-	if err := query(ps.ByName("metadata"), &metadata); err != nil {
+	if err := query(param, &metadata); err != nil {
 		w.WriteHeader(404)
 		return
 	}
@@ -89,12 +102,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	if metadata.Encrypt {
-		var key struct{ Value string }
-		if err := query("key", &key); err != nil || key.Value == "" {
-			w.WriteHeader(500)
-			return
-		}
-		value = []byte(cipher.Encrypt(base64.StdEncoding.EncodeToString([]byte(key.Value)), string(value)))
+		value = []byte(cipher.Encrypt(base64.StdEncoding.EncodeToString([]byte(key.Key)), string(value)))
 	}
 	w.Write(value)
 	log.Printf(`- [%s] "%s" - "%s"`, remote, r.URL, r.UserAgent())
