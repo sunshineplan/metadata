@@ -65,3 +65,18 @@ func backup() {
 	}
 	log.Print("Backup Done!")
 }
+
+func restore(file string) {
+	log.Print("Start!")
+	if file == "" {
+		log.Fatal("Restore file can not be empty.")
+	} else {
+		if _, err := os.Stat(file); err != nil {
+			log.Fatalln("File not found:", err)
+		}
+	}
+	if err := mongo.Restore(file); err != nil {
+		log.Fatal(err)
+	}
+	log.Print("Done!")
+}

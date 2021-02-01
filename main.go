@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/sunshineplan/service"
+	"github.com/sunshineplan/utils"
 	"github.com/sunshineplan/utils/database/mongodb"
 	"github.com/vharitonsky/iniflags"
 )
@@ -73,6 +74,15 @@ func main() {
 			backup()
 		default:
 			log.Fatalln("Unknown argument:", flag.Arg(0))
+		}
+	case 2:
+		switch flag.Arg(0) {
+		case "restore":
+			if utils.Confirm("Do you want to restore database?", 3) {
+				restore(flag.Arg(1))
+			}
+		default:
+			log.Fatalln("Unknown arguments:", strings.Join(flag.Args(), " "))
 		}
 	default:
 		log.Fatalln("Unknown arguments:", strings.Join(flag.Args(), " "))
