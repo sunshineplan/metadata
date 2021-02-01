@@ -39,7 +39,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	var metadata struct {
-		Value     interface{}
+		Value     map[string]interface{}
 		Allowlist []string
 		Encrypt   bool
 	}
