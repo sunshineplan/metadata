@@ -20,7 +20,8 @@ configMyMetadata() {
         [ $srv = true -o $srv = false ] && break
         echo If SRV Server must be true or false!
     done
-    read -p 'Please enter metadata server port: ' dbport
+    read -p 'Please enter metadata server port(default: 27017): ' dbport
+    [ -z $dbport ] && dbport=27017
     read -p 'Please enter metadata database name: ' database
     read -p 'Please enter metadata collection name: ' collection
     read -p 'Please enter metadata server username: ' username
