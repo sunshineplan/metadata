@@ -50,7 +50,7 @@ configMyMetadata() {
     sed -i "s/\$port/$port/" /var/www/metadata/config.ini
     sed -i "s,\$update,$update," /var/www/metadata/config.ini
     sed -i "s|\$exclude|$exclude|" /var/www/metadata/config.ini
-    ./metadata install
+    ./metadata install || exit 1
     service metadata start
 }
 
