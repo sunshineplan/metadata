@@ -12,19 +12,14 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/sunshineplan/cipher"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func query(metadata string, data interface{}) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	client, err := mongo.Open()
-	if err != nil {
-		return err
-	}
-	defer client.Disconnect(ctx)
-	collection := client.Database(mongo.Database).Collection(mongo.Collection)
 
-	return collection.FindOne(ctx, map[string]interface{}{"_id": metadata}).Decode(data)
+	return collection.FindOne(ctx, bson.M{"_id": metadata}).Decode(data)
 }
 
 func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -52,7 +47,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	var metadata struct {
-		Value     map[string]interface{}
+		Value     bson.M
 		Allowlist []string
 		Encrypt   bool
 	}

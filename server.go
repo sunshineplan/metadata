@@ -10,6 +10,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/sunshineplan/cipher"
 	"github.com/sunshineplan/utils/httpsvr"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 var server httpsvr.Server
@@ -24,6 +25,10 @@ func run() {
 		log.SetOutput(f)
 	}
 
+	if err := initMongo(); err != nil {
+		log.Fatalln("Failed to initialize mongodb:", err)
+	}
+
 	router := httprouter.New()
 	router.GET("/:metadata", metadata)
 	router.POST("/do", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
@@ -33,16 +38,16 @@ func run() {
 		switch mode {
 		case "encrypt":
 			w.Header().Set("Content-Type", "application/json")
-			data, _ := json.Marshal(map[string]interface{}{"result": cipher.Encrypt(key, content)})
+			data, _ := json.Marshal(bson.M{"result": cipher.Encrypt(key, content)})
 			w.Write(data)
 		case "decrypt":
 			w.Header().Set("Content-Type", "application/json")
 			result, err := cipher.Decrypt(key, strings.TrimSpace(content))
 			var data []byte
 			if err != nil {
-				data, _ = json.Marshal(map[string]interface{}{"result": nil})
+				data, _ = json.Marshal(bson.M{"result": nil})
 			} else {
-				data, _ = json.Marshal(map[string]interface{}{"result": result})
+				data, _ = json.Marshal(bson.M{"result": result})
 			}
 			w.Write(data)
 		default:

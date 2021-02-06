@@ -9,11 +9,9 @@ import (
 
 	"github.com/sunshineplan/service"
 	"github.com/sunshineplan/utils"
-	"github.com/sunshineplan/utils/database/mongodb"
 	"github.com/vharitonsky/iniflags"
 )
 
-var mongo mongodb.Config
 var logPath *string
 
 var svc = service.Service{
@@ -29,13 +27,13 @@ func main() {
 		log.Fatalln("Failed to get self path:", err)
 	}
 
-	flag.StringVar(&mongo.Server, "dbserver", "localhost", "Metadata Database Server Address")
-	flag.BoolVar(&mongo.SRV, "srv", false, "SRV Server")
-	flag.IntVar(&mongo.Port, "dbport", 27017, "Metadata Database Port")
-	flag.StringVar(&mongo.Database, "database", "", "Metadata Database Name")
-	flag.StringVar(&mongo.Collection, "collection", "", "Metadata Database Collection Name")
-	flag.StringVar(&mongo.Username, "username", "", "Metadata Database Username")
-	flag.StringVar(&mongo.Password, "password", "", "Metadata Database Password")
+	flag.StringVar(&config.Server, "dbserver", "localhost", "Metadata Database Server Address")
+	flag.BoolVar(&config.SRV, "srv", false, "SRV Server")
+	flag.IntVar(&config.Port, "dbport", 27017, "Metadata Database Port")
+	flag.StringVar(&config.Database, "database", "", "Metadata Database Name")
+	flag.StringVar(&config.Collection, "collection", "", "Metadata Database Collection Name")
+	flag.StringVar(&config.Username, "username", "", "Metadata Database Username")
+	flag.StringVar(&config.Password, "password", "", "Metadata Database Password")
 	flag.StringVar(&server.Unix, "unix", "", "UNIX-domain Socket")
 	flag.StringVar(&server.Host, "host", "127.0.0.1", "Server Host")
 	flag.StringVar(&server.Port, "port", "12345", "Server Port")
@@ -44,6 +42,7 @@ func main() {
 	logPath = flag.String("log", "", "Log Path")
 	iniflags.SetConfigFile(filepath.Join(filepath.Dir(self), "config.ini"))
 	iniflags.SetAllowMissingConfigFile(true)
+	iniflags.SetAllowUnknownFlags(true)
 	iniflags.Parse()
 
 	svc.Options.ExcludeFiles = strings.Split(*exclude, ",")
@@ -68,6 +67,8 @@ func main() {
 			err = svc.Start()
 		case "stop":
 			err = svc.Stop()
+		case "restart":
+			err = svc.Restart()
 		case "update":
 			err = svc.Update()
 		case "backup":

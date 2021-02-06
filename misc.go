@@ -10,22 +10,23 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sunshineplan/utils/database/mongodb"
 	"github.com/sunshineplan/utils/mail"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func getClientIP(r *http.Request) string {
-	clientIP := r.Header.Get("X-Forwarded-For")
-	clientIP = strings.TrimSpace(strings.Split(clientIP, ",")[0])
-	if clientIP == "" {
-		clientIP = strings.TrimSpace(r.Header.Get("X-Real-Ip"))
+var config mongodb.Config
+var collection *mongo.Collection
+
+func initMongo() error {
+	client, err := config.Open()
+	if err != nil {
+		return err
 	}
-	if clientIP != "" {
-		return clientIP
-	}
-	if ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr)); err == nil {
-		return ip
-	}
-	return ""
+
+	collection = client.Database(config.Database).Collection(config.Collection)
+
+	return nil
 }
 
 func backup() {
@@ -35,7 +36,7 @@ func backup() {
 		log.Fatal(err)
 	}
 	tmpfile.Close()
-	if err := mongo.Backup(tmpfile.Name()); err != nil {
+	if err := config.Backup(tmpfile.Name()); err != nil {
 		log.Fatal(err)
 	}
 	defer os.Remove(tmpfile.Name())
@@ -75,8 +76,23 @@ func restore(file string) {
 			log.Fatalln("File not found:", err)
 		}
 	}
-	if err := mongo.Restore(file); err != nil {
+	if err := config.Restore(file); err != nil {
 		log.Fatal(err)
 	}
 	log.Print("Done!")
+}
+
+func getClientIP(r *http.Request) string {
+	clientIP := r.Header.Get("X-Forwarded-For")
+	clientIP = strings.TrimSpace(strings.Split(clientIP, ",")[0])
+	if clientIP == "" {
+		clientIP = strings.TrimSpace(r.Header.Get("X-Real-Ip"))
+	}
+	if clientIP != "" {
+		return clientIP
+	}
+	if ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr)); err == nil {
+		return ip
+	}
+	return ""
 }
