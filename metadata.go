@@ -25,11 +25,13 @@ func query(metadata string, data interface{}) error {
 func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var verify struct{ Header, Content string }
 	if err := query("metadata_verify", &verify); err != nil {
+		log.Print(err)
 		w.WriteHeader(500)
 		return
 	}
 	var key struct{ Key string }
 	if err := query("key", &key); err != nil {
+		log.Print(err)
 		w.WriteHeader(500)
 		return
 	}
@@ -52,6 +54,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		Encrypt   bool
 	}
 	if err := query(param, &metadata); err != nil {
+		log.Print(err)
 		w.WriteHeader(404)
 		return
 	}
@@ -77,6 +80,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 				} else {
 					_, ipnet, err := net.ParseCIDR(i)
 					if err != nil {
+						log.Print(err)
 						w.WriteHeader(500)
 						return
 					}
@@ -93,6 +97,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	value, err := json.Marshal(metadata.Value)
 	if err != nil {
+		log.Print(err)
 		w.WriteHeader(500)
 		return
 	}
