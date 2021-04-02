@@ -31,6 +31,10 @@ func initMongo() error {
 
 func backup() {
 	log.Print("Start!")
+	if err := initMongo(); err != nil {
+		log.Fatalln("Failed to initialize mongodb:", err)
+	}
+
 	tmpfile, err := ioutil.TempFile("", "tmp")
 	if err != nil {
 		log.Fatal(err)
