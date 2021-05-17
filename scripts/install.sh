@@ -4,28 +4,32 @@ installSoftware() {
     apt -qq -y install nginx mongodb-org-tools
 }
 
-installMyMetadata() {
+installMetadata() {
     mkdir -p /var/www/metadata
     curl -Lo- https://github.com/sunshineplan/metadata/releases/download/v1.0/release.tar.gz | tar zxC /var/www/metadata
     cd /var/www/metadata
     chmod +x metadata
 }
 
-configMyMetadata() {
+configMetadata() {
     read -p 'Please enter metadata database server address: ' dbserver
     while true
     do
         read -p 'Please enter if srv server(default: false): ' srv
         [ -z $srv ] && srv=false && break
         [ $srv = true -o $srv = false ] && break
-        echo If SRV Server must be true or false!
+        echo SRV Server must be true or false!
     done
-    read -p 'Please enter metadata server port(default: 27017): ' dbport
+    read -p 'Please enter database port(default: 27017): ' dbport
     [ -z $dbport ] && dbport=27017
-    read -p 'Please enter metadata database name: ' database
-    read -p 'Please enter metadata collection name: ' collection
-    read -p 'Please enter metadata server username: ' username
-    read -sp 'Please enter metadata server password: ' password
+    read -p 'Please enter metadata database name(default: metadata): ' database
+    [ -z $database ] && database=metadata
+    read -p 'Please enter metadata collection name(default: metadata): ' collection
+    [ -z $collection ] && collection=metadata
+    read -p 'Please enter username(default: metadata): ' username
+    [ -z $username ] && username=metadata
+    read -sp 'Please enter password: ' password
+    echo
     read -p 'Please enter unix socket(default: /run/metadata.sock): ' unix
     [ -z $unix ] && unix=/run/metadata.sock
     read -p 'Please enter host(default: 127.0.0.1): ' host
@@ -84,8 +88,8 @@ setupNGINX() {
 main() {
     read -p 'Please enter domain:' domain
     installSoftware
-    installMyMetadata
-    configMyMetadata
+    installMetadata
+    configMetadata
     writeLogrotateScrip
     createCronTask
     setupNGINX
