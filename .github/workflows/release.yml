@@ -54,7 +54,7 @@ jobs:
           go mod download
           go build -ldflags "-s -w"
           tar cvzf release.tar.gz scripts metadata config.ini.default
-          echo "::set-output name=date::$(TZ=CST date +'%Y-%m-%d')"
+          echo "::set-output name=date::$(TZ=PRC date +'%Y-%m-%d')"
 
       - name: Create Release
         uses: softprops/action-gh-release@v1

@@ -15,10 +15,11 @@ import (
 var logPath *string
 
 var svc = service.Service{
-	Name:    "Metadata",
-	Desc:    "Instance to serve Metadata",
-	Exec:    run,
-	Options: service.Options{Dependencies: []string{"After=network.target"}},
+	Name:     "Metadata",
+	Desc:     "Instance to serve Metadata",
+	Exec:     run,
+	TestExec: test,
+	Options:  service.Options{Dependencies: []string{"After=network.target"}},
 }
 
 func main() {
@@ -54,11 +55,13 @@ func main() {
 
 	switch flag.NArg() {
 	case 0:
-		run()
+		svc.Run(false)
 	case 1:
 		switch flag.Arg(0) {
 		case "run", "debug":
-			run()
+			svc.Run(true)
+		case "test":
+			err = svc.Test()
 		case "install":
 			err = svc.Install()
 		case "remove":
@@ -71,13 +74,15 @@ func main() {
 			err = svc.Restart()
 		case "update":
 			err = svc.Update()
-		case "backup":
-			backup()
+		case "backup", "restore":
+			log.Fatalln("Need file path argument for", flag.Arg(0))
 		default:
 			log.Fatalln("Unknown argument:", flag.Arg(0))
 		}
 	case 2:
 		switch flag.Arg(0) {
+		case "backup":
+			backup(flag.Arg(1))
 		case "restore":
 			if utils.Confirm("Do you want to restore database?", 3) {
 				restore(flag.Arg(1))

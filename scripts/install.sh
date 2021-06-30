@@ -73,11 +73,6 @@ writeLogrotateScrip() {
     fi
 }
 
-createCronTask() {
-    cp -s /var/www/metadata/scripts/metadata.cron /etc/cron.monthly/metadata
-    chmod +x /var/www/metadata/scripts/metadata.cron
-}
-
 setupNGINX() {
     cp -s /var/www/metadata/scripts/metadata.conf /etc/nginx/conf.d
     sed -i "s/\$domain/$domain/" /var/www/metadata/scripts/metadata.conf
@@ -91,7 +86,6 @@ main() {
     installMetadata
     configMetadata
     writeLogrotateScrip
-    createCronTask
     setupNGINX
 }
 
