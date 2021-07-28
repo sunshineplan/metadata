@@ -44,12 +44,8 @@ func backup(file string) {
 
 func restore(file string) {
 	log.Print("Start!")
-	if file == "" {
-		log.Fatal("Restore file can not be empty.")
-	} else {
-		if _, err := os.Stat(file); err != nil {
-			log.Fatalln("File not found:", err)
-		}
+	if _, err := os.Stat(file); err != nil {
+		log.Fatalln("File not found:", err)
 	}
 	if err := config.Restore(file); err != nil {
 		log.Fatal(err)

@@ -55,10 +55,12 @@ func main() {
 
 	switch flag.NArg() {
 	case 0:
-		svc.Run(false)
+		run()
 	case 1:
 		switch flag.Arg(0) {
-		case "run", "debug":
+		case "run":
+			svc.Run(false)
+		case "debug":
 			svc.Run(true)
 		case "test":
 			err = svc.Test()

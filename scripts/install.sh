@@ -6,7 +6,7 @@ installSoftware() {
 
 installMetadata() {
     mkdir -p /var/www/metadata
-    curl -Lo- https://github.com/sunshineplan/metadata/releases/download/v1.0/release.tar.gz | tar zxC /var/www/metadata
+    curl -Lo- https://github.com/sunshineplan/metadata/releases/latest/download/release.tar.gz | tar zxC /var/www/metadata
     cd /var/www/metadata
     chmod +x metadata
 }
