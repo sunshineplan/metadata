@@ -10,5 +10,5 @@ require (
 	github.com/sunshineplan/service v1.0.1
 	github.com/sunshineplan/utils v0.0.1
 	github.com/vharitonsky/iniflags v0.0.0-20180513140207-a33cd0b5f3de
-	go.mongodb.org/mongo-driver v1.7.0
+	go.mongodb.org/mongo-driver v1.7.1
 )
