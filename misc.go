@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/sunshineplan/utils/database/mongodb"
+	"github.com/sunshineplan/database/mongodb"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
