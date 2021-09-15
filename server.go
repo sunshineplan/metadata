@@ -38,11 +38,11 @@ func run() {
 		switch mode {
 		case "encrypt":
 			w.Header().Set("Content-Type", "application/json")
-			data, _ := json.Marshal(bson.M{"result": cipher.Encrypt(key, content)})
+			data, _ := json.Marshal(bson.M{"result": cipher.EncryptText(key, content)})
 			w.Write(data)
 		case "decrypt":
 			w.Header().Set("Content-Type", "application/json")
-			result, err := cipher.Decrypt(key, strings.TrimSpace(content))
+			result, err := cipher.DecryptText(key, strings.TrimSpace(content))
 			var data []byte
 			if err != nil {
 				data, _ = json.Marshal(bson.M{"result": nil})

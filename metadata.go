@@ -102,7 +102,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	if metadata.Encrypt {
-		value = []byte(cipher.Encrypt(base64.StdEncoding.EncodeToString([]byte(key.Key)), string(value)))
+		value = []byte(cipher.EncryptText(base64.StdEncoding.EncodeToString([]byte(key.Key)), string(value)))
 	}
 	w.Write(value)
 	log.Printf(`- [%s] "%s" - "%s"`, remote, r.URL, r.UserAgent())
