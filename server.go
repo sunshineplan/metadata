@@ -1,16 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/sunshineplan/cipher"
 	"github.com/sunshineplan/utils/httpsvr"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 var server httpsvr.Server
@@ -31,29 +27,6 @@ func run() {
 
 	router := httprouter.New()
 	router.GET("/:metadata", metadata)
-	router.POST("/do", func(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-		mode := r.FormValue("mode")
-		key := r.FormValue("key")
-		content := r.FormValue("content")
-		switch mode {
-		case "encrypt":
-			w.Header().Set("Content-Type", "application/json")
-			data, _ := json.Marshal(bson.M{"result": cipher.EncryptText(key, content)})
-			w.Write(data)
-		case "decrypt":
-			w.Header().Set("Content-Type", "application/json")
-			result, err := cipher.DecryptText(key, strings.TrimSpace(content))
-			var data []byte
-			if err != nil {
-				data, _ = json.Marshal(bson.M{"result": nil})
-			} else {
-				data, _ = json.Marshal(bson.M{"result": result})
-			}
-			w.Write(data)
-		default:
-			w.WriteHeader(400)
-		}
-	})
 
 	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(403)
