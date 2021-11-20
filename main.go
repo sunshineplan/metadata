@@ -7,13 +7,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sunshineplan/database/mongodb/api"
 	"github.com/sunshineplan/service"
-	"github.com/sunshineplan/utils"
+	"github.com/sunshineplan/utils/httpsvr"
 	"github.com/vharitonsky/iniflags"
 )
 
-var logPath *string
-
+var mongo api.Client
+var server = httpsvr.New()
 var svc = service.Service{
 	Name:     "Metadata",
 	Desc:     "Instance to serve Metadata",
@@ -22,25 +23,26 @@ var svc = service.Service{
 	Options:  service.Options{Dependencies: []string{"After=network.target"}},
 }
 
+var (
+	exclude = flag.String("exclude", "", "Exclude Files")
+	logPath = flag.String("log", "", "Log Path")
+)
+
 func main() {
 	self, err := os.Executable()
 	if err != nil {
 		log.Fatalln("Failed to get self path:", err)
 	}
 
-	flag.StringVar(&config.Server, "dbserver", "localhost", "Metadata Database Server Address")
-	flag.BoolVar(&config.SRV, "srv", false, "SRV Server")
-	flag.IntVar(&config.Port, "dbport", 27017, "Metadata Database Port")
-	flag.StringVar(&config.Database, "database", "", "Metadata Database Name")
-	flag.StringVar(&config.Collection, "collection", "", "Metadata Database Collection Name")
-	flag.StringVar(&config.Username, "username", "", "Metadata Database Username")
-	flag.StringVar(&config.Password, "password", "", "Metadata Database Password")
+	flag.StringVar(&mongo.DataSource, "source", "", "Metadata DataSource")
+	flag.StringVar(&mongo.Database, "database", "", "Metadata Database")
+	flag.StringVar(&mongo.Collection, "collection", "", "Metadata Database Collection")
+	flag.StringVar(&mongo.AppID, "id", "", "Metadata App ID")
+	flag.StringVar(&mongo.Key, "key", "", "Metadata API Key")
 	flag.StringVar(&server.Unix, "unix", "", "UNIX-domain Socket")
 	flag.StringVar(&server.Host, "host", "127.0.0.1", "Server Host")
 	flag.StringVar(&server.Port, "port", "12345", "Server Port")
 	flag.StringVar(&svc.Options.UpdateURL, "update", "", "Update URL")
-	exclude := flag.String("exclude", "", "Exclude Files")
-	logPath = flag.String("log", "", "Log Path")
 	iniflags.SetConfigFile(filepath.Join(filepath.Dir(self), "config.ini"))
 	iniflags.SetAllowMissingConfigFile(true)
 	iniflags.SetAllowUnknownFlags(true)
@@ -76,21 +78,8 @@ func main() {
 			err = svc.Restart()
 		case "update":
 			err = svc.Update()
-		case "backup", "restore":
-			log.Fatalln("Need file path argument for", flag.Arg(0))
 		default:
 			log.Fatalln("Unknown argument:", flag.Arg(0))
-		}
-	case 2:
-		switch flag.Arg(0) {
-		case "backup":
-			backup(flag.Arg(1))
-		case "restore":
-			if utils.Confirm("Do you want to restore database?", 3) {
-				restore(flag.Arg(1))
-			}
-		default:
-			log.Fatalln("Unknown arguments:", strings.Join(flag.Args(), " "))
 		}
 	default:
 		log.Fatalln("Unknown arguments:", strings.Join(flag.Args(), " "))

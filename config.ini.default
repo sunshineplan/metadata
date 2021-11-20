@@ -1,10 +1,8 @@
-dbserver   = $dbserver
-srv        = $srv
-dbport     = $dbport
+source     = $source
 database   = $database
 collection = $collection
-username   = $username
-password   = $password
+id         = $id
+key        = $key
 unix       = $unix
 host       = $host
 port       = $port

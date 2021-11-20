@@ -1,25 +1,21 @@
 package main
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net"
 	"net/http"
-	"time"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/sunshineplan/cipher"
-	"go.mongodb.org/mongo-driver/bson"
+	"github.com/sunshineplan/database/mongodb/api"
 )
 
 func query(metadata string, data interface{}) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	return collection.FindOne(ctx, bson.M{"_id": metadata}).Decode(data)
+	return mongo.FindOne(api.FindOneOpt{Filter: api.M{"_id": metadata}}, data)
 }
 
 func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -49,7 +45,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	var metadata struct {
-		Value     bson.M
+		Value     api.M
 		Allowlist []string
 		Encrypt   bool
 	}
@@ -106,4 +102,19 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	w.Write(value)
 	log.Printf(`- [%s] "%s" - "%s"`, remote, r.URL, r.UserAgent())
+}
+
+func getClientIP(r *http.Request) string {
+	clientIP := r.Header.Get("X-Forwarded-For")
+	clientIP = strings.TrimSpace(strings.Split(clientIP, ",")[0])
+	if clientIP == "" {
+		clientIP = strings.TrimSpace(r.Header.Get("X-Real-Ip"))
+	}
+	if clientIP != "" {
+		return clientIP
+	}
+	if ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr)); err == nil {
+		return ip
+	}
+	return ""
 }

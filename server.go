@@ -6,10 +6,12 @@ import (
 	"os"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/sunshineplan/utils/httpsvr"
 )
 
-var server httpsvr.Server
+func test() error {
+	var key struct{ Key string }
+	return query("key", &key)
+}
 
 func run() {
 	if *logPath != "" {
@@ -19,10 +21,6 @@ func run() {
 		}
 		defer f.Close()
 		log.SetOutput(f)
-	}
-
-	if err := initMongo(); err != nil {
-		log.Fatalln("Failed to initialize mongodb:", err)
 	}
 
 	router := httprouter.New()
