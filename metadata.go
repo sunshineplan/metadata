@@ -15,7 +15,7 @@ import (
 )
 
 func query(metadata string, data interface{}) error {
-	return mongo.FindOne(api.FindOneOpt{Filter: api.M{"_id": metadata}}, data)
+	return mongo.FindOne(api.M{"_id": metadata}, nil, data)
 }
 
 func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
