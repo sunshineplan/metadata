@@ -11,11 +11,11 @@ import (
 
 	"github.com/julienschmidt/httprouter"
 	"github.com/sunshineplan/cipher"
-	"github.com/sunshineplan/database/mongodb/api"
+	"github.com/sunshineplan/database/mongodb"
 )
 
 func query(metadata string, data interface{}) error {
-	return mongo.FindOne(api.M{"_id": metadata}, nil, data)
+	return mongo.FindOne(mongodb.M{"_id": metadata}, nil, data)
 }
 
 func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
@@ -45,7 +45,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 
 	var metadata struct {
-		Value     api.M
+		Value     mongodb.M
 		Allowlist []string
 		Encrypt   bool
 	}

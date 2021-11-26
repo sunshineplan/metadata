@@ -7,13 +7,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sunshineplan/database/mongodb"
 	"github.com/sunshineplan/database/mongodb/api"
 	"github.com/sunshineplan/service"
 	"github.com/sunshineplan/utils/httpsvr"
 	"github.com/vharitonsky/iniflags"
 )
 
-var mongo api.Client
+var mongo mongodb.Client
 var server = httpsvr.New()
 var svc = service.Service{
 	Name:     "Metadata",
@@ -34,11 +35,12 @@ func main() {
 		log.Fatalln("Failed to get self path:", err)
 	}
 
-	flag.StringVar(&mongo.DataSource, "source", "", "Metadata DataSource")
-	flag.StringVar(&mongo.Database, "database", "", "Metadata Database")
-	flag.StringVar(&mongo.Collection, "collection", "", "Metadata Database Collection")
-	flag.StringVar(&mongo.AppID, "id", "", "Metadata App ID")
-	flag.StringVar(&mongo.Key, "key", "", "Metadata API Key")
+	var apiClient api.Client
+	flag.StringVar(&apiClient.DataSource, "source", "", "Metadata DataSource")
+	flag.StringVar(&apiClient.Database, "database", "", "Metadata Database")
+	flag.StringVar(&apiClient.Collection, "collection", "", "Metadata Database Collection")
+	flag.StringVar(&apiClient.AppID, "id", "", "Metadata App ID")
+	flag.StringVar(&apiClient.Key, "key", "", "Metadata API Key")
 	flag.StringVar(&server.Unix, "unix", "", "UNIX-domain Socket")
 	flag.StringVar(&server.Host, "host", "127.0.0.1", "Server Host")
 	flag.StringVar(&server.Port, "port", "12345", "Server Port")
@@ -49,6 +51,11 @@ func main() {
 	iniflags.Parse()
 
 	svc.Options.ExcludeFiles = strings.Split(*exclude, ",")
+
+	mongo = &apiClient
+	if err := mongo.Connect(); err != nil {
+		log.Fatal(err)
+	}
 
 	if service.IsWindowsService() {
 		svc.Run(false)
