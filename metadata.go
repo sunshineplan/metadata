@@ -1,120 +1,94 @@
-package main
+package metadata
 
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
-	"net"
+	"io"
 	"net/http"
-	"strings"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/sunshineplan/cipher"
-	"github.com/sunshineplan/database/mongodb"
 )
 
-func query(metadata string, data interface{}) error {
-	return mongo.FindOne(mongodb.M{"_id": metadata}, nil, data)
+// Server contains metadata server address and verify header.
+type Server struct {
+	// metadata server address
+	Addr string
+	// metadata server verify header name
+	Header string
+	// metadata server verify header value
+	Value string
 }
 
-func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-	var verify struct{ Header, Content string }
-	if err := query("metadata_verify", &verify); err != nil {
-		log.Print(err)
-		w.WriteHeader(500)
-		return
-	}
-	var key struct{ Key string }
-	if err := query("key", &key); err != nil {
-		log.Print(err)
-		w.WriteHeader(500)
-		return
+func (s *Server) get(metadata string, client *http.Client) ([]byte, error) {
+	if metadata == "" {
+		return nil, errors.New("metadata is empty")
+	} else if s.Addr == "" {
+		return nil, errors.New("metadata server address is empty")
+	} else if s.Header == "" {
+		return nil, errors.New("metadata server verify header name is empty")
+	} else if s.Value == "" {
+		return nil, errors.New("metadata server verify header value is empty")
 	}
 
-	header := r.Header.Get(verify.Header)
-	if header == "" || header != verify.Content {
-		w.WriteHeader(403)
-		return
-	}
-
-	param := ps.ByName("metadata")
-	if param == "key" {
-		w.Write([]byte(fmt.Sprintf("%q", key.Key)))
-		return
-	}
-
-	var metadata struct {
-		Value     mongodb.M
-		Allowlist []string
-		Encrypt   bool
-	}
-	if err := query(param, &metadata); err != nil {
-		log.Print(err)
-		w.WriteHeader(404)
-		return
-	}
-	remote := getClientIP(r)
-	if metadata.Allowlist != nil {
-		var allow bool
-		switch remote {
-		case "127.0.0.1", "::1":
-			allow = true
-		case "":
-			w.WriteHeader(400)
-			return
-		default:
-			remoteIP := net.ParseIP(remote)
-			for _, i := range metadata.Allowlist {
-				ip, err := net.LookupIP(i)
-				if err == nil {
-					for _, a := range ip {
-						if remoteIP.Equal(a) {
-							allow = true
-						}
-					}
-				} else {
-					_, ipnet, err := net.ParseCIDR(i)
-					if err != nil {
-						log.Print(err)
-						w.WriteHeader(500)
-						return
-					}
-					if ipnet.Contains(remoteIP) {
-						allow = true
-					}
-				}
-			}
-		}
-		if !allow {
-			w.WriteHeader(403)
-			return
-		}
-	}
-	value, err := json.Marshal(metadata.Value)
+	url := s.Addr + "/" + metadata
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		log.Print(err)
-		w.WriteHeader(500)
-		return
+		return nil, fmt.Errorf("failed to make request to %s: %s", url, err)
 	}
-	if metadata.Encrypt {
-		value = []byte(cipher.EncryptText(base64.StdEncoding.EncodeToString([]byte(key.Key)), string(value)))
+	req.Header.Add(s.Header, s.Value)
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to do request to %s: %s", url, err)
 	}
-	w.Write(value)
-	log.Printf(`- [%s] "%s" - "%s"`, remote, r.URL, r.UserAgent())
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("no StatusOK response from %s: %d", url, resp.StatusCode)
+	}
+
+	return io.ReadAll(resp.Body)
 }
 
-func getClientIP(r *http.Request) string {
-	clientIP := r.Header.Get("X-Forwarded-For")
-	clientIP = strings.TrimSpace(strings.Split(clientIP, ",")[0])
-	if clientIP == "" {
-		clientIP = strings.TrimSpace(r.Header.Get("X-Real-Ip"))
+// Get queries metadata from the metadata server.
+func (s *Server) Get(metadata string, data any) error {
+	return s.GetWithClient(metadata, data, http.DefaultClient)
+}
+
+// Decrypt queries encrypted metadata from the metadata server.
+func (s *Server) Decrypt(metadata string, data any) error {
+	return s.DecryptWithClient(metadata, data, http.DefaultClient)
+}
+
+// GetWithClient queries metadata from the metadata server
+// with custom http.Client.
+func (s *Server) GetWithClient(metadata string, data any, client *http.Client) error {
+	b, err := s.get(metadata, client)
+	if err != nil {
+		return err
 	}
-	if clientIP != "" {
-		return clientIP
+
+	return json.Unmarshal(b, data)
+}
+
+// DecryptWithClient queries encrypted metadata from the metadata server
+// with custom http.Client.
+func (s *Server) DecryptWithClient(metadata string, data any, client *http.Client) error {
+	b, err := s.get(metadata, client)
+	if err != nil {
+		return err
 	}
-	if ip, _, err := net.SplitHostPort(strings.TrimSpace(r.RemoteAddr)); err == nil {
-		return ip
+
+	var key string
+	if err = s.GetWithClient("key", &key, client); err != nil {
+		return err
 	}
-	return ""
+
+	str, err := cipher.DecryptText(base64.StdEncoding.EncodeToString([]byte(key)), string(b))
+	if err != nil {
+		return err
+	}
+
+	return json.Unmarshal([]byte(str), data)
 }

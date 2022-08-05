@@ -22,7 +22,10 @@ jobs:
           go-version: '1.x'
 
       - name: Test Code
-        run: go build -v ./...
+        run: |
+          go build -v ./...
+          cd server
+          go build -v ./...
 
   merge:
     if: ${{ github.actor == 'dependabot[bot]' }}
