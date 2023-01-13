@@ -63,8 +63,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 					_, ipnet, err := net.ParseCIDR(i)
 					if err != nil {
 						log.Print(err)
-						w.WriteHeader(500)
-						return
+						continue
 					}
 					if ipnet.Contains(remoteIP) {
 						allow = true
@@ -77,7 +76,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 			return
 		}
 	}
-	value, err := json.Marshal(metadata.Value)
+	value, err := json.Marshal(&metadata.Value)
 	if err != nil {
 		log.Print(err)
 		w.WriteHeader(500)

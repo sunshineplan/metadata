@@ -10,8 +10,8 @@ import (
 	"github.com/sunshineplan/database/mongodb"
 	"github.com/sunshineplan/database/mongodb/api"
 	"github.com/sunshineplan/service"
+	"github.com/sunshineplan/utils/flags"
 	"github.com/sunshineplan/utils/httpsvr"
-	"github.com/vharitonsky/iniflags"
 )
 
 var mongo mongodb.Client
@@ -45,10 +45,8 @@ func main() {
 	flag.StringVar(&server.Host, "host", "127.0.0.1", "Server Host")
 	flag.StringVar(&server.Port, "port", "12345", "Server Port")
 	flag.StringVar(&svc.Options.UpdateURL, "update", "", "Update URL")
-	iniflags.SetConfigFile(filepath.Join(filepath.Dir(self), "config.ini"))
-	iniflags.SetAllowMissingConfigFile(true)
-	iniflags.SetAllowUnknownFlags(true)
-	iniflags.Parse()
+	flags.SetConfigFile(filepath.Join(filepath.Dir(self), "config.ini"))
+	flags.Parse()
 
 	svc.Options.ExcludeFiles = strings.Split(*exclude, ",")
 
