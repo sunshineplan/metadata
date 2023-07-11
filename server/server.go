@@ -1,11 +1,10 @@
 package main
 
 import (
-	"log"
 	"net/http"
-	"os"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/sunshineplan/utils/log"
 )
 
 func test() error {
@@ -13,14 +12,9 @@ func test() error {
 	return query("key", &key)
 }
 
-func run() {
+func run() error {
 	if *logPath != "" {
-		f, err := os.OpenFile(*logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0640)
-		if err != nil {
-			log.Fatalln("Failed to open log file:", err)
-		}
-		defer f.Close()
-		log.SetOutput(f)
+		svc.Logger = log.New(*logPath, "", log.LstdFlags)
 	}
 
 	router := httprouter.New()
@@ -31,7 +25,5 @@ func run() {
 	})
 
 	server.Handler = router
-	if err := server.Run(); err != nil {
-		log.Fatal(err)
-	}
+	return server.Run()
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/base64"
 	"encoding/json"
-	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -20,7 +19,7 @@ func query(metadata string, data any) error {
 func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	var verify struct{ Header, Content string }
 	if err := query("metadata_verify", &verify); err != nil {
-		log.Print(err)
+		svc.Print(err)
 		w.WriteHeader(500)
 		return
 	}
@@ -36,7 +35,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		Encrypt   bool
 	}
 	if err := query(param, &metadata); err != nil {
-		log.Print(err)
+		svc.Print(err)
 		w.WriteHeader(404)
 		return
 	}
@@ -62,7 +61,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 				} else {
 					_, ipnet, err := net.ParseCIDR(i)
 					if err != nil {
-						log.Print(err)
+						svc.Print(err)
 						continue
 					}
 					if ipnet.Contains(remoteIP) {
@@ -78,14 +77,14 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	}
 	value, err := json.Marshal(&metadata.Value)
 	if err != nil {
-		log.Print(err)
+		svc.Print(err)
 		w.WriteHeader(500)
 		return
 	}
 	if metadata.Encrypt && param != "key" {
 		var key struct{ Value string }
 		if err := query("key", &key); err != nil {
-			log.Print(err)
+			svc.Print(err)
 			w.WriteHeader(500)
 			return
 		}
@@ -93,7 +92,7 @@ func metadata(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		value = []byte(cipher.EncryptText(base64.StdEncoding.EncodeToString([]byte(key.Value)), string(value)))
 	}
 	w.Write(value)
-	log.Printf(`- [%s] "%s" - "%s"`, remote, r.URL, r.UserAgent())
+	svc.Printf(`- [%s] "%s" - "%s"`, remote, r.URL, r.UserAgent())
 }
 
 func getClientIP(r *http.Request) string {

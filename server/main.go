@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,14 +13,21 @@ import (
 	"github.com/sunshineplan/utils/httpsvr"
 )
 
-var mongo mongodb.Client
-var server = httpsvr.New()
-var svc = service.Service{
-	Name:     "Metadata",
-	Desc:     "Instance to serve Metadata",
-	Exec:     run,
-	TestExec: test,
-	Options:  service.Options{Dependencies: []string{"After=network.target"}},
+var (
+	mongo mongodb.Client
+
+	server = httpsvr.New()
+	svc    = service.New()
+)
+
+func init() {
+	svc.Name = "Metadata"
+	svc.Desc = "Instance to serve Metadata"
+	svc.Exec = run
+	svc.TestExec = test
+	svc.Options = service.Options{
+		Dependencies: []string{"Wants=network-online.target", "After=network.target"},
+	}
 }
 
 var (
@@ -32,7 +38,7 @@ var (
 func main() {
 	self, err := os.Executable()
 	if err != nil {
-		log.Fatalln("Failed to get self path:", err)
+		svc.Fatalln("Failed to get self path:", err)
 	}
 
 	var apiClient api.Client
@@ -52,27 +58,10 @@ func main() {
 
 	mongo = &apiClient
 	if err := mongo.Connect(); err != nil {
-		log.Fatal(err)
+		svc.Fatal(err)
 	}
 
-	if service.IsWindowsService() {
-		svc.Run(false)
-		return
-	}
-
-	switch flag.NArg() {
-	case 0:
-		run()
-	case 1:
-		cmd := flag.Arg(0)
-		var ok bool
-		if ok, err = svc.Command(cmd); !ok {
-			log.Fatalln("Unknown argument:", cmd)
-		}
-	default:
-		log.Fatalln("Unknown arguments:", strings.Join(flag.Args(), " "))
-	}
-	if err != nil {
-		log.Fatalf("failed to %s: %v", flag.Arg(0), err)
+	if err := svc.ParseAndRun(flag.Args()); err != nil {
+		svc.Fatal(err)
 	}
 }
