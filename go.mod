@@ -1,6 +1,6 @@
 module github.com/sunshineplan/metadata
 
-go 1.19
+go 1.21.0
 
 require github.com/sunshineplan/cipher v1.0.5
 
