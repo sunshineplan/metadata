@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
-	"github.com/sunshineplan/utils/log"
 )
 
 func test() error {
@@ -13,10 +12,6 @@ func test() error {
 }
 
 func run() error {
-	if *logPath != "" {
-		svc.Logger = log.New(*logPath, "", log.LstdFlags)
-	}
-
 	router := httprouter.New()
 	router.GET("/:metadata", metadata)
 
