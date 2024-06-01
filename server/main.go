@@ -11,6 +11,7 @@ import (
 	"github.com/sunshineplan/service"
 	"github.com/sunshineplan/utils/flags"
 	"github.com/sunshineplan/utils/httpsvr"
+	"github.com/sunshineplan/utils/log"
 )
 
 var (
@@ -55,6 +56,9 @@ func main() {
 	flags.Parse()
 
 	svc.Options.ExcludeFiles = strings.Split(*exclude, ",")
+	if *logPath != "" {
+		svc.SetLogger(*logPath, "", log.LstdFlags)
+	}
 
 	mongo = &apiClient
 	if err := mongo.Connect(); err != nil {
