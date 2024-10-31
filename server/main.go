@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/sunshineplan/database/mongodb"
-	"github.com/sunshineplan/database/mongodb/api"
+	"github.com/sunshineplan/database/mongodb/driver"
 	"github.com/sunshineplan/service"
 	"github.com/sunshineplan/utils/flags"
 	"github.com/sunshineplan/utils/httpsvr"
@@ -42,12 +42,14 @@ func main() {
 		svc.Fatalln("Failed to get self path:", err)
 	}
 
-	var apiClient api.Client
-	flag.StringVar(&apiClient.DataSource, "source", "", "Metadata DataSource")
-	flag.StringVar(&apiClient.Database, "database", "", "Metadata Database")
-	flag.StringVar(&apiClient.Collection, "collection", "", "Metadata Database Collection")
-	flag.StringVar(&apiClient.AppID, "id", "", "Metadata App ID")
-	flag.StringVar(&apiClient.Key, "key", "", "Metadata API Key")
+	var client driver.Client
+	flag.StringVar(&client.Server, "server", "", "Metadata Server")
+	flag.IntVar(&client.Port, "port", 0, "Metadata Server Port")
+	flag.StringVar(&client.Database, "database", "", "Metadata Database")
+	flag.StringVar(&client.Collection, "collection", "", "Metadata Database Collection")
+	flag.StringVar(&client.Username, "username", "", "Metadata Username")
+	flag.StringVar(&client.Password, "password", "", "Metadata Password")
+	flag.BoolVar(&client.SRV, "srv", false, "Metadata SRV")
 	flag.StringVar(&server.Unix, "unix", "", "UNIX-domain Socket")
 	flag.StringVar(&server.Host, "host", "127.0.0.1", "Server Host")
 	flag.StringVar(&server.Port, "port", "12345", "Server Port")
@@ -60,7 +62,7 @@ func main() {
 		svc.SetLogger(*logPath, "", log.LstdFlags)
 	}
 
-	mongo = &apiClient
+	mongo = &client
 	if err := mongo.Connect(); err != nil {
 		svc.Fatal(err)
 	}
