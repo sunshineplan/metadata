@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/sunshineplan/database/mongodb"
 	"github.com/sunshineplan/database/mongodb/driver"
 	"github.com/sunshineplan/service"
 	"github.com/sunshineplan/utils/flags"
@@ -15,7 +14,7 @@ import (
 )
 
 var (
-	mongo mongodb.Client
+	mongo driver.Client
 
 	server = httpsvr.New()
 	svc    = service.New()
@@ -44,7 +43,7 @@ func main() {
 
 	var client driver.Client
 	flag.StringVar(&client.Server, "server", "", "Metadata Server")
-	flag.IntVar(&client.Port, "port", 0, "Metadata Server Port")
+	flag.IntVar(&client.Port, "server-port", 0, "Metadata Server Port")
 	flag.StringVar(&client.Database, "database", "", "Metadata Database")
 	flag.StringVar(&client.Collection, "collection", "", "Metadata Database Collection")
 	flag.StringVar(&client.Username, "username", "", "Metadata Username")
@@ -60,11 +59,6 @@ func main() {
 	svc.Options.ExcludeFiles = strings.Split(*exclude, ",")
 	if *logPath != "" {
 		svc.SetLogger(*logPath, "", log.LstdFlags)
-	}
-
-	mongo = &client
-	if err := mongo.Connect(); err != nil {
-		svc.Fatal(err)
 	}
 
 	if err := svc.ParseAndRun(flag.Args()); err != nil {

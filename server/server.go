@@ -12,6 +12,10 @@ func test() error {
 }
 
 func run() error {
+	if err := mongo.Connect(); err != nil {
+		return err
+	}
+
 	router := httprouter.New()
 	router.GET("/:metadata", metadata)
 
