@@ -7,7 +7,7 @@ require (
 	github.com/sunshineplan/cipher v1.0.8
 	github.com/sunshineplan/database/mongodb v1.0.14
 	github.com/sunshineplan/service v1.0.22
-	github.com/sunshineplan/utils v0.1.80
+	github.com/sunshineplan/utils v0.1.82
 )
 
 require (
