@@ -1,18 +1,21 @@
 module metadata
 
-go 1.24.0
+go 1.25
 
 require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/sunshineplan/cipher v1.0.8
 	github.com/sunshineplan/database/mongodb v1.0.14
-	github.com/sunshineplan/service v1.0.24
-	github.com/sunshineplan/utils v0.1.82
+	github.com/sunshineplan/service v1.0.25
+	github.com/sunshineplan/utils v0.1.83
 )
 
 require (
+	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
 	github.com/golang/snappy v1.0.0 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
+	github.com/mattn/go-runewidth v0.0.19 // indirect
+	github.com/sunshineplan/progressbar v1.0.1 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
