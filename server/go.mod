@@ -6,7 +6,7 @@ require (
 	github.com/julienschmidt/httprouter v1.3.0
 	github.com/sunshineplan/cipher v1.0.8
 	github.com/sunshineplan/database/mongodb v1.0.14
-	github.com/sunshineplan/service v1.0.25
+	github.com/sunshineplan/service v1.0.26
 	github.com/sunshineplan/utils v0.1.83
 )
 
@@ -23,6 +23,6 @@ require (
 	go.mongodb.org/mongo-driver/v2 v2.2.3 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect
-	golang.org/x/sys v0.38.0 // indirect
+	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 )
